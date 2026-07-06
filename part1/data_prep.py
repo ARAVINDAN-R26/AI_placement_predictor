@@ -4,9 +4,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-input_file = Path("placementdata.csv")
-output_file = Path("placementdata_prepared.csv")
-output_dir = Path("eda_outputs")
+script_folder = Path(__file__).parent
+input_file = script_folder / "placementdata.csv"
+output_file = script_folder / "placementdata_prepared.csv"
+output_dir = script_folder / "eda_outputs"
 output_dir.mkdir(exist_ok=True)
 
 
@@ -65,11 +66,11 @@ def run_eda(df):
             {
                 "Column": col,
                 "Count": int(s.count()),
-                "Mean": round(float(s.mean()), 4),
-                "Median": round(float(s.median()), 4),
-                "Std": round(float(s.std()), 4),
-                "Min": round(float(s.min()), 4),
-                "Max": round(float(s.max()), 4),
+                "Mean": round(float(s.mean()), 2),
+                "Median": round(float(s.median()), 2),
+                "Std": round(float(s.std()), 2),
+                "Min": round(float(s.min()), 2),
+                "Max": round(float(s.max()), 2),
             }
         )
 
@@ -86,19 +87,20 @@ def run_eda(df):
         f.write(summary_df.to_string(index=False))
 
     print("\nGenerating plots...")
-    plot_histogram(df, "CGPA", output_dir / "hist_cgpa.png")
-    plot_histogram(df, "AptitudeTestScore", output_dir / "hist_aptitude_score.png")
-    plot_histogram(df, "SoftSkillsRating", output_dir / "hist_soft_skills.png")
-    plot_histogram(df, "SSC_Marks", output_dir / "hist_ssc_marks.png")
-    plot_histogram(df, "HSC_Marks", output_dir / "hist_hsc_marks.png")
+    histogram_columns = ["CGPA", "AptitudeTestScore", "SoftSkillsRating", "SSC_Marks", "HSC_Marks"]
+    for col in histogram_columns:
+        filename = f"hist_{col.lower()}.png"
+        plot_histogram(df, col, output_dir / filename)
 
-    plot_countplot(df, "PlacementStatus", output_dir / "count_placement_status.png")
-    plot_countplot(df, "ExtracurricularActivities", output_dir / "count_extracurricular.png")
-    plot_countplot(df, "PlacementTraining", output_dir / "count_placement_training.png")
+    count_columns = ["PlacementStatus", "ExtracurricularActivities", "PlacementTraining"]
+    for col in count_columns:
+        filename = f"count_{col.lower()}.png"
+        plot_countplot(df, col, output_dir / filename)
 
-    plot_boxplot(df, "PlacementStatus", "CGPA", output_dir / "box_cgpa_by_placement.png")
-    plot_boxplot(df, "PlacementStatus", "AptitudeTestScore", output_dir / "box_aptitude_by_placement.png")
-    plot_boxplot(df, "PlacementStatus", "SoftSkillsRating", output_dir / "box_softskills_by_placement.png")
+    box_columns = ["CGPA", "AptitudeTestScore", "SoftSkillsRating"]
+    for col in box_columns:
+        filename = f"box_{col.lower()}_by_placement.png"
+        plot_boxplot(df, "PlacementStatus", col, output_dir / filename)
 
     plt.figure(figsize=(10, 8))
     corr_columns = [col for col in numeric_columns if col != "StudentID"]

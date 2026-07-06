@@ -1,0 +1,18 @@
+EDA Summary
+==========
+Rows: 10000
+Columns: 12
+
+                   Column  Count    Mean  Median     Std  Min     Max
+                StudentID  10000 5000.50  5000.5 2886.90  1.0 10000.0
+                     CGPA  10000    7.70     7.7    0.64  6.5     9.1
+              Internships  10000    1.05     1.0    0.67  0.0     2.0
+                 Projects  10000    2.03     2.0    0.87  0.0     3.0
+ Workshops/Certifications  10000    1.01     1.0    0.90  0.0     3.0
+        AptitudeTestScore  10000   79.45    80.0    8.16 60.0    90.0
+         SoftSkillsRating  10000    4.32     4.4    0.41  3.0     4.8
+ExtracurricularActivities  10000    0.59     1.0    0.49  0.0     1.0
+        PlacementTraining  10000    0.73     1.0    0.44  0.0     1.0
+                SSC_Marks  10000   69.16    70.0   10.43 55.0    90.0
+                HSC_Marks  10000   74.50    73.0    8.92 57.0    88.0
+          PlacementStatus  10000    0.42     0.0    0.49  0.0     1.0

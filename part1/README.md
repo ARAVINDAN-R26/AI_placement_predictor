@@ -131,3 +131,47 @@ Each plot was chosen to surface a particular aspect of data quality or predictiv
 
 ---
 
+## Findings from `data_prep.py`
+
+This script does more than just clean the data: it also reports details and creates visual output that helps you understand the dataset before building a model.
+
+### What the script checks and fixes
+- Reads `placementdata.csv` from the same folder as `data_prep.py`.
+- Prints the dataset shape, column names, and missing value counts.
+- Removes duplicate rows if any are found.
+- Converts the main feature columns to numeric values so statistics and plots work correctly.
+- Fills numeric missing values with the median for each column.
+- Fills categorical missing values with the mode (most common value).
+- Converts `ExtracurricularActivities` and `PlacementTraining` from `Yes`/`No` text into `1`/`0`.
+- Converts the target `PlacementStatus` from `Placed`/`NotPlaced` into `1`/`0`.
+- Strips extra spaces from any text columns to keep values clean.
+- Saves the cleaned dataset as `placementdata_prepared.csv`.
+
+### Key dataset findings from the current run
+- Rows: `10000`
+- Columns: `12`
+- No missing values were found before or after cleaning.
+- No duplicate rows were found.
+- Numeric columns were already mostly clean, so the main cleaning was type conversion and encoding.
+- The dataset includes both binary features and continuous numeric features that are ready for modeling after encoding.
+
+### Observations from summary statistics
+- Average `CGPA` is about `7.70`, with values between `6.5` and `9.1`.
+- `AptitudeTestScore` averages around `79.45`, with a score range of `60` to `90`.
+- `SoftSkillsRating` averages around `4.32`, indicating ratings are concentrated near the top of the scale.
+- `PlacementStatus` is not balanced: about `42%` of students are placed and `58%` are not placed.
+- Binary features such as `ExtracurricularActivities` and `PlacementTraining` are encoded as `0` / `1` and show useful class counts in the generated plots.
+
+### What this means for modeling
+- The target is already numeric and can be used directly in classification models.
+- The dataset is clean enough to move to feature selection, model training, or a simple train/test split.
+- The generated plots are especially useful for spotting distribution shapes, imbalanced classes, and how placed vs not-placed students differ on key scores.
+
+### How to use the outputs
+- `placementdata_prepared.csv` is the cleaned dataset for modeling.
+- `eda_outputs/summary_statistics.csv` contains the numeric summary for each column.
+- `eda_outputs/eda_summary.txt` provides a short textual summary of the dataset.
+- The PNG files in `eda_outputs/` are ready for reports or presentation slides.
+
+---
+
