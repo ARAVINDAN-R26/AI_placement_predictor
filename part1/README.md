@@ -218,7 +218,7 @@ HSC_Marks  9077.0   75.2132    27.8830  -73.0000  730.0000
 - **Decision:** RETAIN.
 
 **Outlier Analysis Output:**
-- Retain the datas since it is valid and doesnt occur much 
+- Retain the datas of the respective columns as it is valid inputs
 - See `eda_outputs/outlier_analysis.csv` for detailed outlier statistics
 
 ---
