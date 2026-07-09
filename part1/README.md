@@ -428,39 +428,9 @@ Spearman rank correlation measures monotonic relationships by:
 | High Skewness | 5 columns | [WARNING] Documented | Consider transformation in Part 2 |
 | Multicollinearity | AptitudeTestScore ↔ SoftSkillsRating (r=0.97) | [WARNING] Documented | Remove one in Part 2 |
 
-### Ready for Part 2?
-**Yes!** The dataset is clean and ready for supervised machine learning:
-- [OK] All null values filled
-- [OK] Duplicates removed
-- [OK] Consistent data types
-- [OK] Clear documentation of data quality issues
-- [OK] Analysis complete and documented
-
-### Part 2 Tasks (Preview)
-1. **Feature Engineering:** Handle outliers, transform skewed features, remove multicollinear variables
-2. **Scaling & Splitting:** StandardScaler, train/test split
-3. **Baseline Model:** Logistic Regression
-4. **Tuned Model:** Hyperparameter tuning
-5. **Evaluation:** F1-score, recall, ROC-AUC (metrics for imbalanced placement classes)
-
----
-
-## Files Generated
-
-### Outputs in `eda_outputs/`
-- `01_line_plot_cgpa.png` — Line plot of CGPA
-- `02_bar_chart_cgpa_by_placement.png` — Mean CGPA by placement status
-- `03_histogram_most_skewed.png` — Histogram of CGPA (most skewed)
-- `04_scatter_cgpa_vs_aptitude.png` — Scatter: CGPA vs AptitudeTestScore
-- `05_boxplot_cgpa_by_placement.png` — Box plot: CGPA by placement status
-- `correlation_heatmap_pearson.png` — Pearson correlation matrix
-- `outlier_analysis.csv` — Detailed outlier statistics per column
-- `correlation_comparison.csv` — Pearson vs Spearman comparison for top 3 pairs
-- `grouped_aggregation.csv` — Grouped statistics by placement status
 
 ### Cleaned Data
 - `cleaned_data.csv` — Ready for Part 2 modeling
-
 
 
 ## Preprocessing steps — what and why (detailed)
