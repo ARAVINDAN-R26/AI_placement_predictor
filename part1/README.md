@@ -461,63 +461,7 @@ Spearman rank correlation measures monotonic relationships by:
 ### Cleaned Data
 - `cleaned_data.csv` — Ready for Part 2 modeling
 
----
 
-## Author Notes
-
-This data cleaning and EDA process follows best practices for beginner-friendly, reproducible analysis:
-- [OK] All code is well-commented
-- [OK] All decisions are justified with reasoning
-- [OK] All outputs are documented
-- [OK] No data is discarded without explanation
-- [OK] Outliers and issues are flagged for future investigation
-
-The dataset is now clean, well-understood, and ready for supervised machine learning in Part 2.
-
-- Saves a cleaned dataset `placementdata_prepared.csv`.
-- Produces numeric summary files and a set of diagnostic plots in the `eda_outputs/` folder.
-
-All steps are designed to be reproducible and lightweight so the prepared file can be used by downstream modeling scripts.
-
----
-
-## Dependencies
-- Python 3.8+ (this workspace uses a venv)
-- Packages (install into your environment):
-  - pandas
-  - numpy
-  - matplotlib
-  - seaborn
-
-
-
-The script will write:
-- `placementdata_prepared.csv` — cleaned dataset
-- `eda_outputs/summary_statistics.csv` — numeric summary
-- `eda_outputs/eda_summary.txt` — textual EDA summary
-- PNG charts in `eda_outputs/` (see list below)
-
----
-
-## Files produced
-- `placementdata_prepared.csv`
-- `eda_outputs/summary_statistics.csv`
-- `eda_outputs/eda_summary.txt`
-- Plot images (PNG) in `eda_outputs/`:
-  - `hist_cgpa.png`
-  - `hist_aptitude_score.png`
-  - `hist_soft_skills.png`
-  - `hist_ssc_marks.png`
-  - `hist_hsc_marks.png`
-  - `count_placement_status.png`
-  - `count_extracurricular.png`
-  - `count_placement_training.png`
-  - `box_cgpa_by_placement.png`
-  - `box_aptitude_by_placement.png`
-  - `box_softskills_by_placement.png`
-  - `heatmap_correlation.png`
-
----
 
 ## Preprocessing steps — what and why (detailed)
 
