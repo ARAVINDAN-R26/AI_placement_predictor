@@ -343,5 +343,5 @@ However, the difference is not very large. Therefore, **CGPA should not be used 
 
 ## TASK 10: Cleaned Dataset
 
-The cleaned file is saved into cleaned_data.csv file which will be used for part 2 and 3.
+The cleaned file is saved into cleaned_data.csv file which will be used for part
 ---
