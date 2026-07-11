@@ -30,13 +30,13 @@ print("\nTASK 1: LOAD AND INSPECT DATASET")
 
 df = pd.read_csv(input_file)
 
-print("\n--- First 5 Rows ---")
+print("\n First 5 Rows")
 print(df.head())
 
-print("\n--- Data Types ---")
+print("\nData Types")
 print(df.dtypes)
 
-print("\n--- Dataset Shape ---")
+print("\n Dataset Shape ")
 print(f"Rows: {df.shape[0]}, Columns: {df.shape[1]}")
 
 
@@ -50,7 +50,6 @@ for column in df.columns:
     if df[column].dtype != "object":
         negative_count = (df[column] < 0).sum()
         if negative_count > 0:
-            print(f"Found {negative_count} negative values in '{column}'. Replacing them with NaN.")
             df[column] = df[column].where(df[column] >= 0, np.nan)
 
 
@@ -58,13 +57,13 @@ for column in df.columns:
 null_count = df.isnull().sum()
 null_percent = (df.isnull().sum() / df.shape[0]) * 100
 
-print("\n--- Null Values Summary ---")
+print("\n Null Values Summary ")
 for col in df.columns:
     print(f"{col}: null count = {null_count[col]}, null percentage = {null_percent[col]:.2f}%")
 
 
 # Check columns with more than 20% nulls after removing duplicates
-print("\n--- Columns Exceeding 20% Null Rate ---")
+print("\n Columns Exceeding 20% Null Rate")
 high_null_found = False
 for col in df.columns:
     if null_percent[col] > 20:
@@ -84,7 +83,7 @@ for column in df.columns:
         if df[column].isnull().any():
             median_value = df[column].median()
             df[column] = df[column].fillna(median_value)
-            print(f"Filled missing values in '{column}' with median: {median_value}")
+            # print(f"Filled missing values in '{column}' with median: {median_value}")
 
 # Fill categorical columns with the most repeated value
 for column in df.columns:
@@ -94,7 +93,7 @@ for column in df.columns:
             if not mode_value.empty:
                 fill_value = mode_value[0]
                 df[column] = df[column].fillna(fill_value)
-                print(f"Filled missing values in '{column}' with mode: {fill_value}")
+                # print(f"Filled missing values in '{column}' with mode: {fill_value}")
 
 
 
@@ -104,7 +103,7 @@ for column in df.columns:
 print("\nTASK 3: DUPLICATE DETECTION AND REMOVAL")
 
 # Remove duplicates and check null percentage again
-print("\n--- Removing Duplicates ---")
+print("\n Removing Duplicates")
 duplicate_count = df.duplicated().sum()
 print(f"Duplicate rows found: {duplicate_count}")
 
@@ -117,7 +116,7 @@ else:
 # Null percentage after removing duplicates
 null_percent_after = (df.isnull().sum() / df.shape[0]) * 100
 
-print("\n--- Null Percentage After Removing Duplicates ---")
+print("\n Null Percentage After Removing Duplicates ")
 for col in df.columns:
     print(f"{col}: {null_percent_after[col]:.2f}%")
 

@@ -1,256 +1,177 @@
-from pathlib import Path
-import pandas as pd
+import os
 import matplotlib.pyplot as plt
-import seaborn as sns
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
+import pandas as pd
+from pathlib import Path
+from sklearn.linear_model import LinearRegression, LogisticRegression, Ridge
 from sklearn.metrics import (
-    accuracy_score,
     classification_report,
     confusion_matrix,
     f1_score,
+    mean_squared_error,
     precision_score,
+    r2_score,
     recall_score,
     roc_auc_score,
     roc_curve,
 )
-from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
+def load_cleaned_data():
+    """Move to the parent folder, then open the part1 folder, and read the CSV file."""
+    script_folder = Path(__file__).resolve().parent
 
-script_folder = Path(__file__).resolve().parent
-input_file = script_folder.parent / "part1" / "placementdata_prepared.csv"
-output_dir = script_folder / "ml_outputs"
-output_dir.mkdir(exist_ok=True)
+    # Go to the folder before this one
+    os.chdir(script_folder.parent)
 
+    # Go into the part1 folder
+    os.chdir("part1")
 
-def save_text(path, content):
-    path.write_text(content, encoding="utf-8")
-
-
-def print_model_metrics(metrics):
-    print(metrics["model"])
-    print("-" * len(metrics["model"]))
-    for key, value in metrics.items():
-        if key != "model":
-            print(f"{key}: {value}")
-    print()
+    # Read the CSV file
+    data = pd.read_csv("cleaned_data.csv")
+    return data
 
 
-def plot_roc_curve(y_test, probabilities, model_name, output_prefix):
-    fpr, tpr, _ = roc_curve(y_test, probabilities)
-    auc_score = roc_auc_score(y_test, probabilities)
-    
-    plt.figure(figsize=(8, 6))
-    plt.plot(fpr, tpr, label=f"ROC Curve (AUC = {auc_score:.4f})", linewidth=2)
-    plt.plot([0, 1], [0, 1], "k--", label="Random Classifier", linewidth=1)
-    plt.xlabel("False Positive Rate")
-    plt.ylabel("True Positive Rate")
-    plt.title(f"{model_name} ROC Curve")
-    plt.legend(loc="lower right")
-    plt.grid(alpha=0.3)
-    plt.tight_layout()
-    plt.savefig(output_dir / f"{output_prefix}_roc_curve.png", dpi=300)
-    plt.close()
+def make_labels(data):
+    """Take one regression column and one classification column."""
+
+    # Regression target: a number
+    y_reg = data["CGPA"].astype(float)
+
+    # Classification target: use the existing binary column
+    y_clf = data["PlacementStatus"].astype(str).str.lower()
+    y_clf = (y_clf == "placed").astype(int)
+
+    # Features: everything except the two target columns
+    X = data.drop(columns=["CGPA", "PlacementStatus"])
+
+    return X, y_reg, y_clf
 
 
-def plot_residuals(y_test, predictions, probabilities, model_name, output_prefix):
-    residuals = y_test.astype(int).to_numpy() - predictions.astype(int)
-    
-    plt.figure(figsize=(10, 5))
-    plt.subplot(1, 2, 1)
-    plt.scatter(probabilities, residuals, alpha=0.5, s=20)
-    plt.axhline(y=0, color="r", linestyle="--", linewidth=2)
-    plt.xlabel("Predicted Probability")
-    plt.ylabel("Residuals")
-    plt.title(f"{model_name} Residuals vs Predicted Probability")
-    plt.grid(alpha=0.3)
-    
-    plt.subplot(1, 2, 2)
-    plt.hist(residuals, bins=30, edgecolor="black", alpha=0.7)
-    plt.xlabel("Residuals")
-    plt.ylabel("Frequency")
-    plt.title(f"{model_name} Residuals Distribution")
-    plt.grid(alpha=0.3, axis="y")
-    
-    plt.tight_layout()
-    plt.savefig(output_dir / f"{output_prefix}_residuals.png", dpi=300)
-    plt.close()
+def encode_categorical_features(X):
+    """Encode categorical columns using one-hot encoding for non-ordered categories."""
+    categorical_cols = X.select_dtypes(include=["object", "category"]).columns.tolist()
 
+    if not categorical_cols:
+        return X
 
-def evaluate_model(model, X_test, y_test, feature_names, model_name, output_prefix):
-    predictions = model.predict(X_test)
-    probabilities = model.predict_proba(X_test)[:, 1]
+    # These columns are yes/no indicators, so they do not have a natural order.
+    # One-hot encoding is used to avoid pretending that one category is "higher" than the other.
+    encoded_X = pd.get_dummies(X, columns=categorical_cols, drop_first=True)
 
-    metrics = {
-        "model": model_name,
-        "accuracy": round(accuracy_score(y_test, predictions), 4),
-        "precision": round(precision_score(y_test, predictions, pos_label=1, zero_division=0), 4),
-        "recall": round(recall_score(y_test, predictions, pos_label=1, zero_division=0), 4),
-        "f1": round(f1_score(y_test, predictions, pos_label=1, zero_division=0), 4),
-        "roc_auc": round(roc_auc_score(y_test, probabilities), 4),
-    }
-
-    report = classification_report(
-        y_test,
-        predictions,
-        target_names=["NotPlaced", "Placed"],
-        digits=4,
-    )
-    save_text(output_dir / f"{output_prefix}_classification_report.txt", report)
-
-    cm = confusion_matrix(y_test, predictions)
-    plt.figure(figsize=(6, 5))
-    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=["NotPlaced", "Placed"], yticklabels=["NotPlaced", "Placed"])
-    plt.title(f"{model_name} Confusion Matrix")
-    plt.xlabel("Predicted")
-    plt.ylabel("Actual")
-    plt.tight_layout()
-    plt.savefig(output_dir / f"{output_prefix}_confusion_matrix.png", dpi=300)
-    plt.close()
-
-    if hasattr(model, "feature_importances_"):
-        feature_importance = pd.DataFrame(
-            {"feature": feature_names, "importance": model.feature_importances_}
-        ).sort_values("importance", ascending=False)
-        feature_importance.to_csv(output_dir / f"{output_prefix}_feature_importance.csv", index=False)
-
-        plt.figure(figsize=(9, 5))
-        sns.barplot(
-            data=feature_importance.head(10),
-            x="importance",
-            y="feature",
-            hue="feature",
-            palette="viridis",
-            dodge=False,
-            legend=False,
-        )
-        plt.title(f"{model_name} Top Feature Importances")
-        plt.tight_layout()
-        plt.savefig(output_dir / f"{output_prefix}_feature_importance.png", dpi=300)
-        plt.close()
-
-    return metrics
-
-
-def error_analysis(y_test, predictions, probabilities, X_test_original, model_name, output_prefix):
-    error_frame = X_test_original.copy()
-    error_frame["actual"] = y_test.astype(int).to_numpy()
-    error_frame["predicted"] = predictions.astype(int)
-    error_frame["predicted_probability_placed"] = probabilities
-    error_frame["correct"] = error_frame["actual"] == error_frame["predicted"]
-    error_frame = error_frame[~error_frame["correct"]].copy()
-    error_frame.to_csv(output_dir / f"{output_prefix}_error_analysis.csv", index=False)
-
-    summary = (
-        f"{model_name} error analysis\n"
-        f"========================\n"
-        f"Misclassified samples: {len(error_frame)}\n"
-        f"Misclassification rate: {round(len(error_frame) / len(y_test), 4)}\n"
-    )
-    save_text(output_dir / f"{output_prefix}_error_summary.txt", summary)
+    return encoded_X
 
 
 def main():
-    sns.set_theme(style="whitegrid")
-    df = pd.read_csv(input_file)
 
-    feature_columns = [col for col in df.columns if col not in ["StudentID", "PlacementStatus"]]
-    X = df[feature_columns]
-    y = df["PlacementStatus"].astype(int)
+    #TASK 1
+    #=======================================================================
+    data = load_cleaned_data()
+    X, y_reg, y_clf = make_labels(data)
+    print("Completed Loading and categorizing data")
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X,
-        y,
-        test_size=0.2,
-        random_state=42,
-        stratify=y,
-    )
+    #TASK 2
+    #=======================================================================
+    X = encode_categorical_features(X)
+    print("Successfully encoded the categorical values")
 
+    #TASK 3
+    #=======================================================================
+    X_train, X_test, y_reg_train, y_reg_test, y_clf_train, y_clf_test = train_test_split(X, y_reg, y_clf, test_size=0.2, random_state=42)
     scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(X_train)
+    scaler.fit(X_train)
+    X_train_scaled = scaler.transform(X_train)
     X_test_scaled = scaler.transform(X_test)
+    print("The datas are successfully scaled")
 
-    X_train_scaled = pd.DataFrame(X_train_scaled, columns=feature_columns, index=X_train.index)
-    X_test_scaled = pd.DataFrame(X_test_scaled, columns=feature_columns, index=X_test.index)
+    #TASK 4
+    #=======================================================================
+    linear_model = LinearRegression()
+    linear_model.fit(X_train_scaled, y_reg_train)
+    y_pred_reg = linear_model.predict(X_test_scaled)
 
-    # metric_choice = (
-    #     "Metric choice\n"
-    #     "============="
-    #     "\nFor this placement prediction task, we prioritize F1-score and recall for the positive class. "
-    #     "Missing a true positive (a student who should be placed) is more costly than a false alarm, "
-    #     "and accuracy alone can be misleading when class balance is imperfect. ROC-AUC is also reported "
-    #     "to measure how well the model ranks placed students above not-placed students."
-    # )
-    # save_text(output_dir / "metric_choice.txt", metric_choice)
-    # print(metric_choice)
+    linear_mse = mean_squared_error(y_reg_test, y_pred_reg)
+    linear_r2 = r2_score(y_reg_test, y_pred_reg)
+    print(f"Linear Regression MSE: {linear_mse:.4f}")
+    print(f"Linear Regression R2: {linear_r2:.4f}")
 
-    baseline_model = LogisticRegression(max_iter=2000, class_weight="balanced", random_state=42)
-    baseline_model.fit(X_train_scaled, y_train)
-    baseline_metrics = evaluate_model(
-        baseline_model,
-        X_test_scaled,
-        y_test,
-        feature_columns,
-        "Baseline Logistic Regression",
-        "baseline",
-    )
-    print_model_metrics(baseline_metrics)
-    plot_roc_curve(y_test, baseline_model.predict_proba(X_test_scaled)[:, 1], "Baseline Logistic Regression", "baseline")
-    plot_residuals(y_test, baseline_model.predict(X_test_scaled), baseline_model.predict_proba(X_test_scaled)[:, 1], "Baseline Logistic Regression", "baseline")
-    error_analysis(
-        y_test,
-        baseline_model.predict(X_test_scaled),
-        baseline_model.predict_proba(X_test_scaled)[:, 1],
-        X_test.copy(),
-        "Baseline Logistic Regression",
-        "baseline",
-    )
+    coefficients = pd.Series(linear_model.coef_, index=X.columns)
+    print("\nLinear Regression coefficients:")
+    print(coefficients.to_string())
 
-    tuned_model = RandomForestClassifier(
-        random_state=42,
-        class_weight="balanced",
-        n_estimators=250,
-        max_depth=None,
-        min_samples_leaf=2,
-    )
-    param_grid = {
-        "n_estimators": [150, 250],
-        "max_depth": [None, 6, 10],
-        "min_samples_leaf": [1, 2],
-    }
-    grid_search = GridSearchCV(
-        estimator=tuned_model,
-        param_grid=param_grid,
-        scoring="f1",
-        cv=5,
-        n_jobs=-1,
-    )
-    grid_search.fit(X_train_scaled, y_train)
-    best_model = grid_search.best_estimator_
+    top_three = coefficients.abs().nlargest(3).index
+    print("\nThree features with the largest absolute coefficients:")
+    for feature in top_three:
+        print(f"{feature}: {coefficients[feature]:.4f}")
 
-    tuned_metrics = evaluate_model(
-        best_model,
-        X_test_scaled,
-        y_test,
-        feature_columns,
-        f"Tuned Random Forest ({grid_search.best_params_})",
-        "tuned",
-    )
-    print_model_metrics(tuned_metrics)
-    plot_roc_curve(y_test, best_model.predict_proba(X_test_scaled)[:, 1], f"Tuned Random Forest", "tuned")
-    plot_residuals(y_test, best_model.predict(X_test_scaled), best_model.predict_proba(X_test_scaled)[:, 1], f"Tuned Random Forest", "tuned")
-    error_analysis(
-        y_test,
-        best_model.predict(X_test_scaled),
-        best_model.predict_proba(X_test_scaled)[:, 1],
-        X_test.copy(),
-        f"Tuned Random Forest ({grid_search.best_params_})",
-        "tuned",
-    )
+    ridge_model = Ridge(alpha=1.0)
+    ridge_model.fit(X_train_scaled, y_reg_train)
+    y_pred_ridge = ridge_model.predict(X_test_scaled)
 
-    comparison_df = pd.DataFrame([baseline_metrics, tuned_metrics])
-    comparison_df.to_csv(output_dir / "model_comparison.csv", index=False)
+    ridge_mse = mean_squared_error(y_reg_test, y_pred_ridge)
+    ridge_r2 = r2_score(y_reg_test, y_pred_ridge)
+    print(f"\nRidge Regression MSE: {ridge_mse:.4f}")
+    print(f"Ridge Regression R2: {ridge_r2:.4f}")
 
+    #TASK 5
+    #=======================================================================
+
+    #PART A
+
+    # Logistic Regression classification
+    class_counts = y_clf_train.value_counts()
+    minority_percentage = class_counts.min() / class_counts.sum()
+    print("\nClassification training-label counts:")
+    print(class_counts)
+
+    if minority_percentage < 0.35:
+        logistic_model = LogisticRegression(max_iter=1000, class_weight="balanced")
+        print("Using class_weight='balanced' because the minority class has fewer than 35% of samples.")
+    else:
+        logistic_model = LogisticRegression(max_iter=1000)
+        print("No class weighting is needed because both classes have at least 35% of samples.")
+
+    logistic_model.fit(X_train_scaled, y_clf_train)
+    y_pred_clf = logistic_model.predict(X_test_scaled)
+
+    #getting the probablity for roc auc curve
+    y_prob_clf = logistic_model.predict_proba(X_test_scaled)[:, 1] 
+
+    print("\nConfusion matrix:")
+    print(confusion_matrix(y_clf_test, y_pred_clf))
+    print("\nClassification report:")
+    print(classification_report(y_clf_test, y_pred_clf, digits=4))
+
+    fpr, tpr, _ = roc_curve(y_clf_test, y_prob_clf)
+    auc_score = roc_auc_score(y_clf_test, y_prob_clf)
+    print(f"ROC-AUC: {auc_score:.4f}")
+
+    plt.figure(figsize=(8, 6))
+    plt.plot(fpr, tpr, label="Logistic Regression ROC curve")
+    plt.plot([0, 1], [0, 1], linestyle="--", color="gray")
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title("Logistic Regression ROC Curve")
+    plt.text(0.60, 0.15, f"AUC = {auc_score:.4f}")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+    # PART B
+    threshold_results = []
+    for threshold in [0.30, 0.40, 0.50, 0.60, 0.70]:
+        threshold_predictions = (y_prob_clf >= threshold).astype(int)
+        threshold_results.append(
+            {
+                "Threshold": threshold,
+                "Precision": precision_score(y_clf_test, threshold_predictions),
+                "Recall": recall_score(y_clf_test, threshold_predictions),
+                "F1": f1_score(y_clf_test, threshold_predictions),
+            }
+        )
+
+    threshold_table = pd.DataFrame(threshold_results)
+    print("\nDecision-threshold sensitivity:")
+    print(threshold_table.to_string(index=False, float_format="{:.4f}".format))
 
 main()
