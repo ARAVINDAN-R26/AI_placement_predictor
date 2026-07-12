@@ -62,6 +62,16 @@ def encode_categorical_features(X):
     return encoded_X
 
 
+def save_processed_data(X_train_scaled, X_test_scaled, y_clf_train, y_clf_test, feature_names):
+    """Save the scaled feature data and classification labels as CSV files."""
+    output_folder = Path(__file__).resolve().parent
+    pd.DataFrame(X_train_scaled, columns=feature_names).to_csv(output_folder / "X_train_scaled.csv", index=False)
+    pd.DataFrame(X_test_scaled, columns=feature_names).to_csv(output_folder / "X_test_scaled.csv", index=False)
+    y_clf_train.to_frame(name="PlacementStatus").to_csv(output_folder / "y_clf_train.csv", index=False)
+    y_clf_test.to_frame(name="PlacementStatus").to_csv(output_folder / "y_clf_test.csv", index=False)
+    print(f"Saved processed classification data to: {output_folder}")
+
+
 def bootstrap_auc_difference(y_test, baseline_probabilities, regularized_probabilities):
     
     auc_differences = []
@@ -135,6 +145,9 @@ def main():
     scaler.fit(X_train)
     X_train_scaled = scaler.transform(X_train)
     X_test_scaled = scaler.transform(X_test)
+    save_processed_data(
+        X_train_scaled, X_test_scaled, y_clf_train, y_clf_test, X_train.columns
+    )
     print("The datas are successfully scaled")
 
     #TASK 4
