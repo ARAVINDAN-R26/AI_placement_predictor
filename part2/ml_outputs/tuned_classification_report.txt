@@ -1,8 +1,0 @@
-              precision    recall  f1-score   support
-
-   NotPlaced     0.8513    0.7838    0.8161      1161
-      Placed     0.7304    0.8105    0.7684       839
-
-    accuracy                         0.7950      2000
-   macro avg     0.7908    0.7971    0.7923      2000
-weighted avg     0.8006    0.7950    0.7961      2000
