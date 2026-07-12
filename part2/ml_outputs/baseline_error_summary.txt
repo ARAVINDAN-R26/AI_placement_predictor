@@ -1,4 +1,0 @@
-Baseline Logistic Regression error analysis
-========================
-Misclassified samples: 401
-Misclassification rate: 0.2005

@@ -1,4 +1,0 @@
-Tuned Random Forest ({'max_depth': 6, 'min_samples_leaf': 2, 'n_estimators': 250}) error analysis
-========================
-Misclassified samples: 410
-Misclassification rate: 0.205
