@@ -1,4 +1,4 @@
-### Supervised Machine Learning model
+### Supervised Machine Learning & Classification
 
 ## TASK 1
 -   The cleaned dataset from part1 is loaded.
