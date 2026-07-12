@@ -211,6 +211,9 @@ def main():
     plt.text(0.60, 0.15, f"AUC = {auc_score:.4f}")
     plt.legend()
     plt.tight_layout()
+    roc_plot_path = Path(__file__).resolve().parent / "logistic_regression_roc_curve.png"
+    plt.savefig(roc_plot_path, dpi=300)
+    print(f"ROC curve saved to: {roc_plot_path}")
     plt.show()
 
     # PART B
