@@ -77,6 +77,8 @@ For this placement classification task, **Recall** is more important because a f
 The **AUC (Area Under the ROC Curve)** value indicates how well the model can distinguish between the two classes. A higher AUC value means the model is better at separating placed and not placed students, while an AUC value closer to 0.5 indicates that the model performs similarly to random guessing.
 
 ## TASK 5 (b)
+- calculating the F1 score, recall, precission for different thresolds of (0.3 to 0.7)
+
 (a) **Precision** is calculated as **TP / (TP + FP)**, where **TP** is the number of true positives and **FP** is the number of false positives. It measures the proportion of positive predictions that are actually correct.
 
 **Recall** is calculated as **TP / (TP + FN)**, where **FN** is the number of false negatives. It measures the proportion of actual positive samples that are correctly identified by the model.
@@ -86,3 +88,33 @@ The **AUC (Area Under the ROC Curve)** value indicates how well the model can di
 (c) For this placement classification task, **Recall** is more important because a false negative means predicting that a student is not placed when they are actually placed. Since missing a placed student is more costly than incorrectly predicting a student as placed, maximizing recall is the preferred objective.
 
 (d) To optimize for recall, the classification threshold should be **lowered**. A lower threshold increases the number of positive predictions, reducing false negatives and improving recall. However, the cost of lowering the threshold is an increase in false positives, which reduces precision because more students who are not actually placed may be predicted as placed.
+
+## TASK 6
+
+## Regularization Experiment Results
+
+| Model | Precision | Recall | AUC |
+|-------|----------:|-------:|----:|
+| Baseline (C = 1.0) | 0.7076 | 0.7017 | 0.8329 |
+| Strong L2 Regularization (C = 0.01) | 0.7082 | 0.6933 | 0.8363 |
+
+- In scikit-learn's LogisticRegression, C is the inverse of the regularization parameter.
+- So large value of C leads to weak regularisation and small value of C leads to strong regularisation
+- In this dataset strong regularization has slightly decreased the performance of the model. Since recall is more important for this datase, baseline model produces slightly better results when compared to the strong regularisation. whereas strong regularization performs slightly better in precision and AUC, but since the difference is so small we can ignore it.
+
+**RESULT**
+- The strong reggularization for this dataset has neither increased or decreased the performance of this model, as the difference between the baseline and strong regularization is so less.
+
+## TASK 7
+
+## Bootstrap AUC Difference (C = 1.0 − C = 0.01)
+
+| Statistic | Value |
+|-----------|------:|
+| Mean AUC Difference | -0.0034 |
+| 95% Confidence Interval (Lower Bound) | -0.0051 |
+| 95% Confidence Interval (Upper Bound) | -0.0017 |
+
+- The 95% confidence interval for the AUC difference is [-0.0051, -0.0017], which does not include zero. 
+- This indicates that the observed difference in AUC is likely consistent across different test samples and is not just due to random variation. 
+- Since the AUC difference (C=1.0 − C=0.01) is negative, the model with C=0.01 consistently achieved a slightly higher AUC than the model with C=1.0 on this dataset.

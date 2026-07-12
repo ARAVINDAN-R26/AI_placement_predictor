@@ -113,6 +113,19 @@ PlacementStatus: 0.00%
 
 ---
 
+## Categorical Encoding Strategy
+
+The feature matrix X contains two categorical columns: ExtracurricularActivities and PlacementTraining.
+Both columns contain yes/no values, so they do not have a natural order such as Low < Medium < High.
+Because of that, label encoding would create a false impression that one category is somehow "higher" or "lower" than the other.
+
+To avoid this problem, we used one-hot encoding with pd.get_dummies(..., drop_first=True).
+This creates separate binary columns for the categories and removes one dummy column to avoid multicollinearity.
+
+This approach is better for this dataset because the categories are simple yes/no indicators rather than ordered categories.
+
+---
+
 ## TASK 5: Descriptive Statistics & Skewness
 
 **Positive skewness vs Negative skewness**
