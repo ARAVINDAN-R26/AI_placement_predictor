@@ -5,6 +5,8 @@ from pathlib import Path
 import pandas as pd
 import json
 from jsonschema import validate, ValidationError
+import re
+import json
 
 # TASK 1
 # ======================================================================
@@ -54,6 +56,25 @@ result = call_llm(
 )
 
 print(result)
+
+
+def has_pii(text):
+    email_pattern = r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+'
+    phone_pattern = r'\b\d{10}\b|\b\d{3}[-.\s]\d{3}[-.\s]\d{4}\b'
+
+    return bool(re.search(email_pattern, text) or re.search(phone_pattern, text))
+
+def safe_call_llm(system_prompt, user_prompt):
+    """
+    Checks for PII before calling the LLM.
+    Returns None if PII is detected.
+    """
+
+    if has_pii(user_prompt):
+        print("Input blocked: PII detected.")
+        return None
+
+    return call_llm(system_prompt=system_prompt, user_prompt=user_prompt)
 
 
 # TASK 2
@@ -181,11 +202,12 @@ for index, row in records.iterrows():
         record_json=record_json
     )
 
-    # Call the LLM
-    response = call_llm(
-        SYSTEM_PROMPT,
-        user_prompt
-    )
+    # Guardrail: Check for PII before calling the LLM
+    if has_pii(user_prompt):
+        print("Input blocked: PII detected.")
+        response = None
+    else:
+        response = call_llm(SYSTEM_PROMPT, user_prompt)
 
     # Handle API failure
     if response is None:
@@ -263,3 +285,65 @@ print("Summary")
 
 for i, result in enumerate(results, start=1):
     print(f"Record {i}: {result['Validation Status']}")
+
+
+# TASK 4
+# ======================================================================
+record_with_email = {
+    "Name": "John Doe",
+    "Email": "john.doe@gmail.com",
+    "CGPA": 8.4,
+    "Internships": 2,
+    "Projects": 4,
+    "Workshops/Certifications": 3,
+    "AptitudeTestScore": 82,
+    "SoftSkillsRating": 4.2,
+    "ExtracurricularActivities": "yes",
+    "PlacementTraining": "yes",
+    "SSC_Marks": 88,
+    "HSC_Marks": 86
+}
+
+user_prompt = USER_PROMPT_TEMPLATE.format(
+    record_json=json.dumps(record_with_email, indent=2)
+)
+
+print("=" * 80)
+print("TEST 1 : INPUT WITH EMAIL")
+print("=" * 80)
+
+response = safe_call_llm(
+    SYSTEM_PROMPT,
+    user_prompt
+)
+
+print("Response:", response)
+
+record_without_pii = {
+    "CGPA": 8.4,
+    "Internships": 2,
+    "Projects": 4,
+    "Workshops/Certifications": 3,
+    "AptitudeTestScore": 82,
+    "SoftSkillsRating": 4.2,
+    "ExtracurricularActivities": "yes",
+    "PlacementTraining": "yes",
+    "SSC_Marks": 88,
+    "HSC_Marks": 86
+}
+
+user_prompt = USER_PROMPT_TEMPLATE.format(
+    record_json=json.dumps(record_without_pii, indent=2)
+)
+
+print("\n" + "=" * 80)
+print("TEST 2 : INPUT WITHOUT PII")
+print("=" * 80)
+
+response = safe_call_llm(
+    SYSTEM_PROMPT,
+    user_prompt
+)
+
+print("Response:")
+print(response)
