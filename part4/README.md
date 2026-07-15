@@ -31,24 +31,8 @@ The original dataset contained a `StudentID` column, but it was removed during p
 
 ## TASK 5
 
-| Input | LLM Output | Valid JSON | Pass/Block |
-|-------|------------|------------|------------|
-| {'CGPA': 77.0, 'Internships': 10.0, 'Projects': 20.0, 'Workshops/Certifications': 10.0, 'AptitudeTestScore': 800.0, 'SoftSkillsRating': 44.0, 'ExtracurricularActivities': 'yes', 'PlacementTraining': 'yes', 'SSC_Marks': 700.0, 'HSC_Marks': 730.0} | {"risk_tier": "low", "flag_for_review": false, "primary_signal": "CGPA is at least 8.0", "confidence": "high", "recommended_action": "Continue to maintain strong performance"} | Pass | Pass |
-| {'CGPA': 7.6, 'Internships': 1.0, 'Projects': 1.0, 'Workshops/Certifications': 1.0, 'AptitudeTestScore': 71.0, 'SoftSkillsRating': 4.2, 'ExtracurricularActivities': 'no', 'PlacementTraining': 'no', 'SSC_Marks': 64.0, 'HSC_Marks': 71.0} | ```json
-{
-  "risk_tier": "medium",
-  "flag_for_review": true,
-  "primary_signal": "PlacementTraining is missing",
-  "confidence": "medium",
-  "recommended_action": "Enroll in placement training"
-}
-``` | Fail | Block |
-| {'CGPA': 7.4, 'Internships': 2.0, 'Projects': 3.0, 'Workshops/Certifications': 3.0, 'AptitudeTestScore': 86.0, 'SoftSkillsRating': 4.2, 'ExtracurricularActivities': 'yes', 'PlacementTraining': 'yes', 'SSC_Marks': 60.0, 'HSC_Marks': 75.0} | ```json
-{
-  "risk_tier": "low",
-  "flag_for_review": false,
-  "primary_signal": "Consistently strong readiness indicators across multiple metrics",
-  "confidence": "high",
-  "recommended_action": "Continue to leverage existing strengths and seek challenging opportunities"
-}
-``` | Fail | Block |
+| Input                                                                                                                                                                                                                                                   | LLM Output                                                                                                                                                                                                                                                    | Valid JSON (Pass/Fail) | Pass/Block (Guardrail Result) |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- | ----------------------------- |
+| `{"CGPA": 77.0, "Internships": 10.0, "Projects": 20.0, "Workshops/Certifications": 10.0, "AptitudeTestScore": 800.0, "SoftSkillsRating": 44.0, "ExtracurricularActivities": "yes", "PlacementTraining": "yes", "SSC_Marks": 700.0, "HSC_Marks": 730.0}` | `{"risk_tier":"low","flag_for_review":false,"primary_signal":"CGPA is at least 8.0","confidence":"high","recommended_action":"Continue to maintain strong performance"}`                                                                                      | Pass                   | Pass                          |
+| `{"CGPA": 7.6, "Internships": 1.0, "Projects": 1.0, "Workshops/Certifications": 1.0, "AptitudeTestScore": 71.0, "SoftSkillsRating": 4.2, "ExtracurricularActivities": "no", "PlacementTraining": "no", "SSC_Marks": 64.0, "HSC_Marks": 71.0}`           | `json {"risk_tier":"medium","flag_for_review":true,"primary_signal":"PlacementTraining is missing","confidence":"medium","recommended_action":"Enroll in placement training"} `                                                                               | Fail                   | Block                         |
+| `{"CGPA": 7.4, "Internships": 2.0, "Projects": 3.0, "Workshops/Certifications": 3.0, "AptitudeTestScore": 86.0, "SoftSkillsRating": 4.2, "ExtracurricularActivities": "yes", "PlacementTraining": "yes", "SSC_Marks": 60.0, "HSC_Marks": 75.0}`         | `json {"risk_tier":"low","flag_for_review":false,"primary_signal":"Consistently strong readiness indicators across multiple metrics","confidence":"high","recommended_action":"Continue to leverage existing strengths and seek challenging opportunities"} ` | Fail                   | Block                         |
