@@ -332,18 +332,88 @@ record_without_pii = {
     "HSC_Marks": 86
 }
 
-user_prompt = USER_PROMPT_TEMPLATE.format(
-    record_json=json.dumps(record_without_pii, indent=2)
-)
+user_prompt = USER_PROMPT_TEMPLATE.format( record_json=json.dumps(record_without_pii, indent=2))
 
 print("\n" + "=" * 80)
 print("TEST 2 : INPUT WITHOUT PII")
 print("=" * 80)
 
-response = safe_call_llm(
-    SYSTEM_PROMPT,
-    user_prompt
-)
+response = safe_call_llm(SYSTEM_PROMPT, user_prompt)
 
 print("Response:")
 print(response)
+
+
+# TASK 5
+# ======================================================================
+
+print("\n" + "=" * 80)
+print("END TO END DEMONSTRATION")
+print("=" * 80)
+
+# Take the first three records from the dataset
+temp_df = cleaned_df[FEATURE_COLUMNS].head(3)
+
+# Store results for README
+readme_results = []
+
+record_number = 1
+
+for index, row in temp_df.iterrows():
+
+    print("\n" + "=" * 80)
+    print(f"INPUT {record_number}")
+    print("=" * 80)
+
+    # Convert the row into a dictionary
+    record = row.to_dict()
+
+    print("\nInput:")
+    print(json.dumps(record, indent=4))
+
+    # Create the prompt
+    user_prompt = USER_PROMPT_TEMPLATE.format(record_json=json.dumps(record, indent=4))
+
+    # Call the LLM
+    raw_response = safe_call_llm(SYSTEM_PROMPT, user_prompt)
+
+    print("\nLLM Raw Response:")
+    print(raw_response)
+
+    # Default values
+    valid_json = "Fail"
+    guardrail_result = "Block"
+
+    # Check whether the response is valid
+    if raw_response is not None:
+
+        try:
+            llm_output = json.loads(raw_response)
+
+            validate(
+                instance=llm_output,
+                schema=OUTPUT_SCHEMA
+            )
+
+            valid_json = "Pass"
+            guardrail_result = "Pass"
+
+        except json.JSONDecodeError as e:
+            print("JSON Error:", e)
+            valid_json = "Fail"
+            guardrail_result = "Block"
+
+    print("\nValidation Outcome:")
+    print("Valid JSON :", valid_json)
+    print("Pass/Block :", guardrail_result)
+
+    # Save for README
+    readme_results.append({
+        "Input": record,
+        "LLM Output": raw_response,
+        "Valid JSON": valid_json,
+        "Pass/Block": guardrail_result
+    })
+
+    record_number += 1
+
